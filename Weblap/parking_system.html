@@ -1,0 +1,179 @@
+<html lang="hu-HU">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel = "stylesheet" type = "text/css" href = "parking.css">
+		<link rel = "icon" type = "image/icon" href = "web_icon.png">
+		<script src="https://kit.fontawesome.com/8489170811.js" crossorigin="anonymous"></script>
+		<title>Intelligens parkoló rendszer</title>
+	</head>
+	<body>
+		<!--Bekezdés-->
+		<div id = "main">
+		</div>
+		
+		<!--JavaScript kód-->
+		<script type="module">
+			//Szükséges függvények importálása
+			import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+			import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+			
+			//Adatbázis konfiguráláshoz szükságes adatok
+			const firebaseConfig = {
+				apiKey: "",
+				authDomain: "",
+				databaseURL: "",
+				projectId: "",
+				storageBucket: "",
+				messagingSenderId: "",
+				appId: ""
+			};
+
+			//Adatbázis inicializálása
+			const app = initializeApp(firebaseConfig);
+			const db = getDatabase();
+			
+			//1000 ms-os késleltetés
+			setTimeout(() => {
+				const connectedRef = ref(getDatabase(), '.info/connected');		//Adatbázissal való kapcsolat állapotát tároló változó
+				
+				//Kapcsolódást ellenőrző függvény
+				onValue(connectedRef, function(snap) {
+					if (snap.val() === true) {
+						console.log("Kapcsolódva a Firebase Realtime Database-hez");
+						Query();		//Lekérdezéseket tartalamzó függvény meghívása
+					}
+					else {
+						console.log("Nem sikerült kapcsolódni a Firebase Realtime Database-hez");
+						ConFailed();		//Sikertelen kapcsolódást jelző függvény meghívása
+					}
+				});
+			}, 1000);
+			
+			var placeArray = [];		//Parkolóhelyek adatait tároló tömb
+			var i = 0;					//Iterációs változó a parkolóhelyek adatainak lekérdezéséhez
+			
+			var cols;
+			const rows = 2;
+			var head;
+			const foot = "</table>"
+			var table = "";
+			var available;
+			
+			const refData = ref(db, 'Parking system/Slots');				//Parkolóhelyek adatainak elérési útvonala az adatbázisban
+			const availableRef = ref(db, 'Parking system/Available');		//Szabad parkolóhelyek számának elérési útvonala az adatbázisban
+			
+			function Query(){
+				//Szabad parkolóhelyek számának lekérdezése
+				onValue(availableRef, (snapshot) => {
+					available = snapshot.val();		//Szabad parkolóhelyek eltárolása
+				});
+				
+				//Parkolóhelyek adatainak lekérdezése
+				onValue(refData, (snapshot) => {
+					snapshot.forEach((childSnapshot) => {
+						const id = childSnapshot.key
+						const childData = childSnapshot.val();
+						placeArray[i] = [id, childData]		//Lekérdezett adatok eltárolása tömbben
+						i++;
+					});
+					
+					//Generált táblázat kódját tartalmazó változók ürítése
+					table = "";
+					head = "";
+					
+					cols = placeArray.length/rows;
+					
+					document.title = "(" + available + "/" + placeArray.length + ") Intelligens parkoló rendszer";		//Böngésző címsorának frissítése
+					
+					if(window.innerWidth >= window.innerHeight){		//Ablak magasságának és szélességének összehasonlítása
+						Landscape(placeArray);		//Parkolót fekvő módban megjelenítő függvény meghívása
+					}
+					else{
+						Portrait(placeArray);		//Parkolót portré módban megjelenítő függvény meghívása
+					}
+					
+					window.addEventListener("resize", function () {		//Ablak méreteinek változását figyelő függvény
+						//Generált táblázat kódját tartalmazó változók ürítése
+						table = "";
+						head = "";
+						
+						if(window.innerWidth >= window.innerHeight){
+							Landscape(placeArray);
+						}
+						else{
+							Portrait(placeArray);
+						}
+					});
+					
+					i = 0;		//Iterációs változó nullára állítása
+				});
+			}
+			
+			//Parkolót álló módban megjelenítő függvény
+			function Landscape(placeArray){
+				head += "<table style = 'width: " + (cols*8.14) + "em'>";		//Táblázat méretének beállítása
+					
+					table += "<tr><td colspan = " + cols + " class = 'store'>ÁRUHÁZ</tr>";		//Áruház cellájának lérehozása
+					
+					//Parkolóhelyek első sorának létrehozása
+					for(var j = 1; j <= cols; j++){		//Iterálás a parkolóhelyek adatait tartalmazó tömb első felén
+						table += "<td ";
+						if(!placeArray[j-1][1]) table += "class='red'>" + placeArray[j-1][0];
+						else table += "class='green'>" + placeArray[j-1][0];
+					}
+					table += "</tr>";
+					
+					table += "<tr><td colspan = " + cols + " class = 'road'><span><i class='far fa-arrow-alt-circle-right'></span></tr>";		//Parkolót kettészelő út cellájának létrehozása
+					
+					//Parkolóhelyek második sorának létrehozása
+					for(j; j <= cols*2; j++){		//Iterálás a parkolóhelyek adatait tartalmazó tömb második felén
+						table += "<td ";
+						if(!placeArray[j-1][1]) table += "class='red'>" + placeArray[j-1][0];
+						else table += "class='green'>" + placeArray[j-1][0];
+					}
+					table += "</tr>";
+					
+					document.getElementById("main").innerHTML = head + table + foot;		//Generált táblázat kódjának betöltése a létrehozott bekezdésben
+			}
+			
+			//Parkolót portré módban megjelenítő függvény
+			function Portrait(placeArray){
+				head += "<table style = 'width: " + ((8 + 12.14) * 2) + "em; border-spacing: 0.1em 0.1em;'>";		//Táblázat méretének beállítása
+				
+				for(var j = cols-1; j >= 0; j--){
+					table += "<tr>";
+					
+					//Áruház cellájának lérehozása
+					if(j == cols-1) {
+						table += "<td rowspan = " + cols + " class = 'store portrait'>ÁRUHÁZ";
+					}
+					
+					//Aktuális sor első parkolóhelyének létrehozása
+					if(!placeArray[j][1]) table += "<td class='red portrait'>" + placeArray[j][0];
+					else table += "<td class='green portrait'>" + placeArray[j][0];
+					
+					//Parkolót kettészelő út cellájának létrehozása
+					if(j == cols-1) {
+						table += "<td rowspan = " + cols + " class = 'road portrait'><center><i class='far fa-arrow-alt-circle-up'></center>"
+					}
+					
+					//Aktuális sor második parkolóhelyének létrehozása
+					if(!placeArray[j + cols][1]) table += "<td class='red portrait'>" + placeArray[j + cols][0];
+					else table += "<td class='green portrait'>" + placeArray[j + cols][0];
+					
+					table += "</tr>";
+				}
+				
+				document.getElementById("main").innerHTML = head + table + foot;		//Generált táblázat kódjának betöltése a létrehozott bekezdésben
+			}
+			
+			//Sikertelen kapcsolódást jelző függvény
+			function ConFailed(){
+				var banner = "<p id = 'banner'><span>Az adatbázishoz kapcsolódás sikertelen</span><br>" +
+							"Az oldal automatikusan frissülni fog.</p>";
+				document.getElementById("main").innerHTML = banner;
+			}
+		</script>
+	</body>
+</html>

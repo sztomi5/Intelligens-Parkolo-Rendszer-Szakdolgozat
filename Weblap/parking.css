@@ -1,0 +1,97 @@
+﻿body {
+	margin: 0;
+}
+
+/*Görgetősáv elrejtése*/
+body::-webkit-scrollbar {
+    display: none;
+}
+
+/*Táblázat stílusa*/
+table{
+	border-style: hidden;
+	border-spacing: 0.1em 0em;
+	padding: 0;
+	margin: 0.1em 0em;
+}
+
+/*Foglalt parkolóhely  cella stílusa*/
+.red{
+	background-color: #FF1A1A;
+	color: white;
+	text-align: center;
+	font-size: 2em;
+	font-weight: bold;
+	border: 0.01em black solid;
+	height: 8em;
+	width: 4em;
+	padding: 0;
+}
+
+/*Szabad parkolóhely  cella stílusa*/
+.green{
+	background-color: #00FF00;
+	color: black;
+	text-align: center;
+	font-size: 2em;
+	font-weight: bold;
+	border: 0.01em black solid;
+	height: 8em;
+	width: 4em;
+	padding: 0;
+}
+
+/*Áruház cella stílusa*/
+.store{
+	background-color: aqua;
+	height: 3em;
+	font-size: 2em;
+	font-weight: bold;
+	text-align: center;
+}
+
+/*Út cella stílusa*/
+.road{
+	background-color: silver;
+	font-size: 2em;
+	height: 4em;
+	padding: 0.2em 0.5em;
+}
+
+/*Foglalt parkolóhely cella stílusának módosítása portré módban*/
+.red.portrait{
+	width: 6em;
+	height: 3em;
+}
+
+/*Szabad parkolóhely  cella stílusának módosítása portré módban*/
+.green.portrait{
+	width: 6em;
+	height: 3em;
+}
+
+/*Áruház cella stílusának módosítása portré módban*/
+.store.portrait{
+	width: 4em; 
+	writing-mode: vertical-lr; 
+	text-orientation: upright;
+}
+
+/*Út cella stílusának módosítása portré módban*/
+.road.portrait{
+	width: 4em;
+	vertical-align: bottom;
+}
+
+/*Sikertelen kapcsolódást jelzés stílusai*/
+#banner{
+	text-align: center;
+	margin: 1em;
+	line-height: 2em;
+	font-size: 1.2em;
+}
+
+#banner span{
+	font-weight: bold;
+	font-size: 1.5em;
+}
